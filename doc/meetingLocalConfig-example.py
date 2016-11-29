@@ -7,6 +7,7 @@
 # not possible.
 #
 
+
 class Config(object):
     # These are "required":
     logFileDir = '/home/richard/meetbot/'
@@ -15,5 +16,3 @@ class Config(object):
     # These, you might want to change:
     #MeetBotInfoURL = 'http://wiki.debian.org/MeetBot'
     #filenamePattern = '%(channel)s/%%Y/%(channel)s.%%F-%%H.%%M'
-
-

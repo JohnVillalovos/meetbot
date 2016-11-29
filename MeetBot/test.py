@@ -33,28 +33,30 @@ from supybot.test import *
 import os
 import sys
 
+
 class MeetBotTestCase(ChannelPluginTestCase):
     channel = "#testchannel"
-    plugins = ('MeetBot',)
+    plugins = ('MeetBot', )
 
     def testRunMeeting(self):
         test_script = file(os.path.join("test-script-2.log.txt"))
         for line in test_script:
             # Normalize input lines somewhat.
             line = line.strip()
-            if not line: continue
+            if not line:
+                continue
             # This consists of input/output pairs we expect.  If it's
             # not here, it's not checked for.
-            match_pairs = (('#startmeeting', 'Meeting started'),
-                           ('#endmeeting', 'Meeting ended'),
-                           ('#topic +(.*)', 1),
-                           ('#meetingtopic +(.*)', 1),
-                           ('#meetingname','The meeting name has been set to'),
-                           ('#chair', 'Current chairs:'),
-                           ('#unchair', 'Current chairs:'),
-                           )
+            match_pairs = (
+                ('#startmeeting', 'Meeting started'),
+                ('#endmeeting', 'Meeting ended'),
+                ('#topic +(.*)', 1),
+                ('#meetingtopic +(.*)', 1),
+                ('#meetingname', 'The meeting name has been set to'),
+                ('#chair', 'Current chairs:'),
+                ('#unchair', 'Current chairs:'), )
             # Run the command and get any possible output
-            reply = [ ]
+            reply = []
             self.feedMsg(line)
             r = self.irc.takeMsg()
             while r:
@@ -69,7 +71,7 @@ class MeetBotTestCase(ChannelPluginTestCase):
                     groups = re.search(test[0], line).groups()
                     # Output pattern depends on input pattern
                     if isinstance(test[1], int):
-                        print groups[test[1]-1], reply
+                        print groups[test[1] - 1], reply
                         assert re.search(re.escape(groups[test[1]-1]), reply),\
                               'line "%s" gives output "%s"'%(line, reply)
                     # Just match the given pattern.

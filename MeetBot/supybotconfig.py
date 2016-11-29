@@ -29,7 +29,6 @@
 # POSSIBILITY OF SUCH DAMAGE.
 ###
 
-
 import types
 
 import supybot.conf as conf
@@ -41,35 +40,39 @@ import ircmeeting.writers as writers
 # The plugin group for configuration
 MeetBotConfigGroup = conf.registerPlugin('MeetBot')
 
+
 class WriterMap(registry.String):
     """List of output formats to write.  This is a space-separated
     list of 'WriterName:.ext' pairs.  WriterName must be from the
     writers.py module, '.ext' must be a extension ending in a .
     """
+
     def set(self, s):
         s = s.split()
-        writer_map = { }
+        writer_map = {}
         for writer in s:
             #from fitz import interact ; interact.interact()
             writer, ext = writer.split(':', 1)
             if not hasattr(writers, writer):
-                raise ValueError("Writer name not found: %s"%writer)
+                raise ValueError("Writer name not found: %s" % writer)
             #if len(ext) < 2 or ext[0] != '.':
             #    raise ValueError("Extension must start with '.' and have "
             #                     "at least one more character.")
             writer_map[ext] = getattr(writers, writer)
         self.setValue(writer_map)
+
     def setValue(self, writer_map):
         for e, w in writer_map.iteritems():
             if not hasattr(w, "format"):
-                raise ValueError("Writer %s must have method .format()"%
+                raise ValueError("Writer %s must have method .format()" %
                                  w.__name__)
             self.value = writer_map
+
     def __str__(self):
-        writers_string = [ ]
+        writers_string = []
         for ext, w in self.value.iteritems():
             name = w.__name__
-            writers_string.append("%s:%s"%(name, ext))
+            writers_string.append("%s:%s" % (name, ext))
         return " ".join(writers_string)
 
 
@@ -83,7 +86,7 @@ class SupybotConfigProxy(object):
         old_init = self.__C.__init__
         new_init = types.MethodType(old_init.im_func, self, old_init.im_class)
         new_init(*args, **kwargs)
-    
+
     def __getattr__(self, attrname):
         """Try to get the value from the supybot registry.  If it's in
         the registry, return it.  If it's not, then proxy it to th.
@@ -126,16 +129,20 @@ class SupybotConfigProxy(object):
         return value
 
 
-
 #conf.registerGlobalValue(MeetBot
 use_supybot_config = conf.registerGlobalValue(MeetBotConfigGroup,
                                               'enableSupybotBasedConfig',
                                               registry.Boolean(False, ''))
+
+
 def is_supybotconfig_enabled(OriginalConfig):
     return (use_supybot_config.value and
             not getattr(OriginalConfig, 'dontBotConfig', False))
 
-settable_attributes = [ ]
+
+settable_attributes = []
+
+
 def setup_config(OriginalConfig):
     # Set all string variables in the default Config class as supybot
     # registry variables.
@@ -150,11 +157,11 @@ def setup_config(OriginalConfig):
             # For a global value: conf.registerGlobalValue and remove the
             # channel= option from registryValue call above.
             conf.registerChannelValue(MeetBotConfigGroup, attrname,
-                                      registry.String(attr,""))
+                                      registry.String(attr, ""))
             settable_attributes.append(attrname)
         if isinstance(attr, bool):
             conf.registerChannelValue(MeetBotConfigGroup, attrname,
-                                      registry.Boolean(attr,""))
+                                      registry.Boolean(attr, ""))
             settable_attributes.append(attrname)
 
     # writer_map
@@ -163,12 +170,11 @@ def setup_config(OriginalConfig):
     #if 'writer_map' in MeetBotConfigGroup._children:
     #    MeetBotConfigGroup.unregister('writer_map')
     conf.registerChannelValue(MeetBotConfigGroup, 'writer_map',
-                      WriterMap(OriginalConfig.writer_map, ""))
+                              WriterMap(OriginalConfig.writer_map, ""))
     settable_attributes.append('writer_map')
+
 
 def get_config_proxy(OriginalConfig):
     # Here is where the real proxying occurs.
     SupybotConfigProxy._SupybotConfigProxy__OriginalConfig = OriginalConfig
     return SupybotConfigProxy
-
-
